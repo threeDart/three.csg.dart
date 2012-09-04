@@ -1,0 +1,10 @@
+name: three.csg.dart
+version: 1.0.0
+description: >
+  A port of ThreeCSG to Dart
+dependencies:
+  three.dart:
+    git: git://github.com/threeDart/three.dart.git
+  csg.dart:
+    git: git://github.com/inevo/csg.dart.git
+
