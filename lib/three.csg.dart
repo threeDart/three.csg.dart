@@ -11,15 +11,15 @@ Provided under the MIT License
 
 /**
  * based on commit/530aa70c49a84ed8f17cfa086860f23d2049f2ed
- * 
+ *
  * Ported to Dart by:
- * 
+ *
  * @author nelsonsilva - http://www.inevo.pt
  **/
 
-#library("three.csg.dart");
+library three.csg.dart ;
 
-#import("packages/csg.dart/csg.dart", prefix:'CSG');
-#import("packages/three.dart/src/ThreeD.dart", prefix:'THREE');
+import "package:csg/csg.dart" as CSG;
+import 'package:three/three.dart' as THREE;
 
-#source("lib/bsp.dart");
+part "bsp.dart";
