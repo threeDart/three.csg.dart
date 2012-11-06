@@ -1,4 +1,4 @@
-part of three_csg;
+part of threecsg;
 
 class BSP {
   THREE.Matrix4 matrix;

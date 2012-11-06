@@ -1,9 +1,9 @@
 import "dart:html";
-import 'package:three.csg/three.csg.dart';
+import 'package:threecsg/threecsg.dart';
 import 'package:three/three.dart' as THREE;
+import 'package:three/extras/controls/trackball.dart' as THREE;
 
-
-var renderer, scene, camera;
+var renderer, scene, camera, controls;
 
 /// Example #1 - Cube (mesh) subtract Sphere (mesh)
 example1() {
@@ -12,7 +12,7 @@ example1() {
   cube_mesh.position.x = -10;
   var cube_bsp = new BSP( cube_mesh );
 
-  var sphere_geometry = new THREE.SphereGeometry( 1.8, 80, 80 );
+  var sphere_geometry = new THREE.SphereGeometry( 1.8, 20, 20 );
   var sphere_mesh = new THREE.Mesh( sphere_geometry );
   sphere_mesh.position.x = -9.9;
   var sphere_bsp = new BSP( sphere_mesh );
@@ -24,7 +24,7 @@ example1() {
 
 /// Example #2 - Sphere (geometry) union Cube (geometry)
 example2() {
-  var sphere_geometry = new THREE.SphereGeometry( 2,80,80);
+  var sphere_geometry = new THREE.SphereGeometry( 2, 20, 20 );
   var sphere_bsp = new BSP( sphere_geometry );
 
   var cube_geometry = new THREE.CubeGeometry( 7, .5, 3 );
@@ -39,10 +39,10 @@ example2() {
 
 // Example #3 - Sphere (geometry) intersect Sphere (mesh)
 example3() {
-  var sphere_geometry_1 = new THREE.SphereGeometry( 2,80,80);
+  var sphere_geometry_1 = new THREE.SphereGeometry( 2, 20, 20 );
   var sphere_bsp_1 = new BSP( sphere_geometry_1 );
 
-  var sphere_geometry_2 = new THREE.SphereGeometry( 2,80,80);
+  var sphere_geometry_2 = new THREE.SphereGeometry( 2, 20, 20 );
   var sphere_mesh_2 = new THREE.Mesh( sphere_geometry_2 );
   sphere_mesh_2.position.x = 2;
   var sphere_bsp_2 = new BSP( sphere_mesh_2 );
@@ -54,38 +54,11 @@ example3() {
   scene.add( result_mesh );
 }
 
-// Example #4 - Geometry Extrusion subtraaction (mesh)
-example4() {
-  
-  var extrude_extrudePath =  new THREE.SplineCurve3( 
-      [new THREE.Vector3(0,0,-1),
-       new THREE.Vector3(0,0,1)]     
-  );
-  var tube = new THREE.TubeGeometry(extrude_extrudePath,10, 2, 50, false, false);
-  var extrusion_mesh_1 = new THREE.Mesh( tube );
-  var extrusion_1 = new BSP( tube );
-  
-  var extrude_extrudePath_2 =  new THREE.SplineCurve3( 
-      [new THREE.Vector3(0,-1,0),
-       new THREE.Vector3(0,1,0)]     
-  );
-  var tube_2 = new THREE.TubeGeometry(extrude_extrudePath_2, 10, 2, 5, false, false);
-  var extrusion_mesh_2 = new THREE.Mesh( tube_2 );
-  var extrusion_2 = new BSP( tube_2 );
-  scene.add( extrusion_mesh_1 );
-  scene.add( extrusion_mesh_2 );
-  var intersect_bsp = extrusion_1.subtract( extrusion_2 );
+render() => renderer.render( scene, camera );
 
-  var result_mesh = intersect_bsp.toMesh(new THREE.MeshNormalMaterial(side: THREE.DoubleSide) );
-  result_mesh.position.x = -5;
-  scene.add( result_mesh );
-}
-
-onDocumentMouseMove(MouseEvent event) {
-  var mouseX = event.clientX;
-  //scene.position.x = mouseX ;
-  camera.position.setValues(0, mouseX, 15);
-  renderer.render(scene, camera);
+animate(num time) {
+  window.requestAnimationFrame( animate );
+  controls.update();
 }
 
 main() {
@@ -100,12 +73,16 @@ main() {
   camera.position.setValues(0, 10, 15);
   camera.lookAt(scene.position);
 
-  //example1();
-  //example2();
-  //example3();
-  example4();
-  document.on.mouseMove.add(onDocumentMouseMove, false );  
-  renderer.render(scene, camera);
+  example1();
+  example2();
+  example3();
+  
+  controls = new THREE.TrackballControls( camera, renderer.domElement )
+  ..rotateSpeed = 0.5
+  ..addEventListener( 'change', (_) => render() );
+  
+  animate(0);
+
 }
 
 /// Test #1 - Cube (mesh)

@@ -17,9 +17,9 @@ Provided under the MIT License
  * @author nelsonsilva - http://www.inevo.pt
  **/
 
-library three.csg.dart ;
+library threecsg;
 
 import "package:csg/csg.dart" as CSG;
 import 'package:three/three.dart' as THREE;
 
-part "bsp.dart";
+part "src/bsp.dart";

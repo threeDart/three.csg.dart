@@ -1,10 +1,14 @@
-name: three.csg.dart
+name: threecsg
 version: 1.0.0
 description: >
   A port of ThreeCSG to Dart
+authors:
+- Nelson Silva <nelson.silva@inevo.pt>
+- Tiago Cardoso <tiago.cardoso@inevo.pt>
+homepage: https://github.com/threeDart/three.csg.dart
 dependencies:
-  three.dart:
+  three:
     git: git://github.com/threeDart/three.dart.git
-  csg.dart:
-    git: git://github.com/inevo/csg.dart.git
+  csg:
+    git: git://github.com/threeDart/csg.dart.git
 
