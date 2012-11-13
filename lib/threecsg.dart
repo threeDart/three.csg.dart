@@ -21,5 +21,6 @@ library threecsg;
 
 import "package:csg/csg.dart" as CSG;
 import 'package:three/three.dart' as THREE;
+import 'dart:math' as Math;
 
 part "src/bsp.dart";
