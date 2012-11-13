@@ -26,24 +26,27 @@ class BSP {
       throw 'ThreeBSP: Given geometry is unsupported';
     }
 
-     var polygons = geometry.faces.map((face) {
-
-      var faceIdxs = [];
-
+    var faces3 = [];
+    
+    for(var face in geometry.faces){
       if ( face is THREE.Face3 ) {
-        faceIdxs = [face.a, face.b, face.c];
+        faces3.add([face.a, face.b, face.c]);
       } else if ( face is THREE.Face4 ) {
-        faceIdxs = [face.a, face.b, face.c, face.d];
+        faces3.add([face.a, face.b, face.d]);
+        faces3.add([ face.c, face.d, face.b]);
       } else {
         throw 'Invalid face type $face';
       }
-
-      List vertices = (faceIdxs as List).map( (idx) {
+    }
+    
+    var polygons = faces3.map((face) {
+     
+      List vertices = (face as List).map( (idx) {
           THREE.Vector3 vector = geometry.vertices[ idx].clone();
           matrix.multiplyVector3(vector);
           return new CSG.Vertex(new CSG.Vector(vector.x, vector.y, vector.z));
       });
-
+      
       return new CSG.Polygon(vertices);
     });
 
@@ -117,15 +120,18 @@ class BSP {
     var matrix = new THREE.Matrix4().getInverse( this.matrix );
     var geometry = new THREE.Geometry();
     var vertex, vector, face;
-
+    var maxVertex = tree.allPolygons.map((p) => p.vertices.length).reduce(0, (a,b) => Math.max(a,b));
+    
+    print("[BSP] MAX VERTEXES : ${maxVertex}");
+        
     tree.allPolygons.forEach((polygon) {
 
       var polygon_vertice_count = polygon.vertices.length;
 
 
-      if ( polygon_vertice_count == 4) { // Use THREE.Face4
-
-        for (var i = 0; i < 4; i ++ ) {
+      if ( polygon_vertice_count == 47) { // Use THREE.Face4
+         //print("[BSP] face4");
+         for (var i = 0; i < 4; i ++ ) {
 
           vertex = polygon.vertices[i].pos;
           vector = new THREE.Vector3( vertex.x, vertex.y, vertex.z );
@@ -145,36 +151,42 @@ class BSP {
         geometry.faces.add( face );
 
       } else { // Use THREE.Face3
-
+        //print("[BSP] face3 - ${polygon_vertice_count}");
         for ( var j = 2; j < polygon_vertice_count; j++ ) {
           vertex = polygon.vertices[0].pos;
           vector = new THREE.Vector3( vertex.x, vertex.y, vertex.z );
           matrix.multiplyVector3( vector );
           geometry.vertices.add( vector );
-
+          
           vertex = polygon.vertices[j-1].pos;
           vector = new THREE.Vector3( vertex.x, vertex.y, vertex.z );
           matrix.multiplyVector3( vector );
           geometry.vertices.add( vector );
-
+          
           vertex = polygon.vertices[j].pos;
           vector = new THREE.Vector3( vertex.x, vertex.y, vertex.z );
           matrix.multiplyVector3( vector );
           geometry.vertices.add( vector );
-
+          
           face = new THREE.Face3(
-            geometry.vertices.length - 3,
-            geometry.vertices.length - 2,
-            geometry.vertices.length - 1,
-            new THREE.Vector3( polygon.normal.x, polygon.normal.y, polygon.normal.z )
-          );
-
+              geometry.vertices.length - 3,
+              geometry.vertices.length - 2,
+              geometry.vertices.length - 1,
+              new THREE.Vector3( polygon.normal.x, polygon.normal.y, polygon.normal.z )
+          ); 
+          
           geometry.faces.add( face );
         }
-     }
+
+
+       
+
+          
+        }
 
     });
 
+    geometry.computeCentroids();
     geometry.computeFaceNormals();
     geometry.mergeVertices();
 
