@@ -26,19 +26,22 @@ class BSP {
       throw 'ThreeBSP: Given geometry is unsupported';
     }
 
-     var polygons = geometry.faces.map((face) {
+    var faces = [];
 
-      var faceIdxs = [];
-
+    for (var face in geometry.faces){
       if ( face is THREE.Face3 ) {
-        faceIdxs = [face.a, face.b, face.c];
+        faces.add([face.a, face.b, face.c]);
       } else if ( face is THREE.Face4 ) {
-        faceIdxs = [face.a, face.b, face.c, face.d];
+        faces.add([face.a, face.b, face.d]);
+        faces.add([face.c, face.d, face.b]);
       } else {
         throw 'Invalid face type $face';
       }
+    }
 
-      List vertices = (faceIdxs as List).map( (idx) {
+    var polygons = faces.map((face) {
+
+      List vertices = (face as List).map( (idx) {
           THREE.Vector3 vector = geometry.vertices[ idx].clone();
           matrix.multiplyVector3(vector);
           return new CSG.Vertex(new CSG.Vector(vector.x, vector.y, vector.z));
@@ -122,10 +125,9 @@ class BSP {
 
       var polygon_vertice_count = polygon.vertices.length;
 
+      if (polygon_vertice_count == 4) { // Use THREE.Face4
 
-      if ( polygon_vertice_count == 4) { // Use THREE.Face4
-
-        for (var i = 0; i < 4; i ++ ) {
+         for (var i = 0; i < 4; i ++ ) {
 
           vertex = polygon.vertices[i].pos;
           vector = new THREE.Vector3( vertex.x, vertex.y, vertex.z );
@@ -163,18 +165,20 @@ class BSP {
           geometry.vertices.add( vector );
 
           face = new THREE.Face3(
-            geometry.vertices.length - 3,
-            geometry.vertices.length - 2,
-            geometry.vertices.length - 1,
-            new THREE.Vector3( polygon.normal.x, polygon.normal.y, polygon.normal.z )
+              geometry.vertices.length - 3,
+              geometry.vertices.length - 2,
+              geometry.vertices.length - 1,
+              new THREE.Vector3( polygon.normal.x, polygon.normal.y, polygon.normal.z )
           );
 
           geometry.faces.add( face );
         }
-     }
+
+      }
 
     });
 
+    geometry.computeCentroids();
     geometry.computeFaceNormals();
     geometry.mergeVertices();
 
