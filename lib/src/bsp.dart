@@ -1,7 +1,7 @@
 part of threecsg;
 
 class BSP {
-  THREE.Matrix4 matrix;
+  Matrix4 matrix;
   CSG.Node tree;
 
   BSP._internal(this.matrix, this.tree);
@@ -9,12 +9,12 @@ class BSP {
   /// Convert THREE.Geometry to BSP
   factory BSP(var geometryOrMesh) {
 
-    THREE.Matrix4 matrix;
+    Matrix4 matrix;
     CSG.Node tree;
     THREE.Geometry geometry;
 
     if ( geometryOrMesh is THREE.Geometry ) {
-      matrix = new THREE.Matrix4();
+      matrix = new Matrix4.identity();
       geometry = geometryOrMesh;
     } else if ( geometryOrMesh is THREE.Mesh ) {
       var mesh = geometryOrMesh as THREE.Mesh;
@@ -26,7 +26,7 @@ class BSP {
       throw 'ThreeBSP: Given geometry is unsupported';
     }
 
-    var faces3 = [];
+    List<List> faces3 = [];
     
     for(var face in geometry.faces){
       if ( face is THREE.Face3 ) {
@@ -39,16 +39,16 @@ class BSP {
       }
     }
     
-    var polygons = faces3.map((face) {
+    List<CSG.Polygon> polygons = faces3.map((face) {
      
-      List vertices = (face as List).map( (idx) {
-          THREE.Vector3 vector = geometry.vertices[ idx].clone();
-          matrix.multiplyVector3(vector);
+      List vertices = face.map( (idx) {
+          Vector3 vector = geometry.vertices[ idx].clone();
+          vector.applyProjection(matrix);
           return new CSG.Vertex(new CSG.Vector(vector.x, vector.y, vector.z));
-      });
+      }).toList(growable: true);
       
       return new CSG.Polygon(vertices);
-    });
+    }).toList(growable: true);
 
     tree = new CSG.Node( polygons );
 
@@ -117,10 +117,11 @@ class BSP {
 
   THREE.Geometry toGeometry() {
 
-    var matrix = new THREE.Matrix4().getInverse( this.matrix );
+    var matrix = this.matrix.clone();
+    matrix.invert();
     var geometry = new THREE.Geometry();
     var vertex, vector, face;
-    var maxVertex = tree.allPolygons.map((p) => p.vertices.length).reduce(0, (a,b) => Math.max(a,b));
+    var maxVertex = tree.allPolygons.map((p) => p.vertices.length).toList().reduce((a,b) => Math.max(a,b));
     
     print("[BSP] MAX VERTEXES : ${maxVertex}");
         
@@ -134,8 +135,8 @@ class BSP {
          for (var i = 0; i < 4; i ++ ) {
 
           vertex = polygon.vertices[i].pos;
-          vector = new THREE.Vector3( vertex.x, vertex.y, vertex.z );
-          matrix.multiplyVector3( vector );
+          vector = new Vector3( vertex.x, vertex.y, vertex.z );
+          vector.applyProjection(matrix);
           geometry.vertices.add( vector );
 
         }
@@ -145,7 +146,7 @@ class BSP {
           geometry.vertices.length - 3,
           geometry.vertices.length - 2,
           geometry.vertices.length - 1,
-          new THREE.Vector3( polygon.normal.x, polygon.normal.y, polygon.normal.z )
+          new Vector3( polygon.normal.x, polygon.normal.y, polygon.normal.z )
         );
 
         geometry.faces.add( face );
@@ -154,25 +155,25 @@ class BSP {
         //print("[BSP] face3 - ${polygon_vertice_count}");
         for ( var j = 2; j < polygon_vertice_count; j++ ) {
           vertex = polygon.vertices[0].pos;
-          vector = new THREE.Vector3( vertex.x, vertex.y, vertex.z );
-          matrix.multiplyVector3( vector );
+          vector = new Vector3( vertex.x, vertex.y, vertex.z );
+          vector.applyProjection(matrix);
           geometry.vertices.add( vector );
           
           vertex = polygon.vertices[j-1].pos;
-          vector = new THREE.Vector3( vertex.x, vertex.y, vertex.z );
-          matrix.multiplyVector3( vector );
+          vector = new Vector3( vertex.x, vertex.y, vertex.z );
+          vector.applyProjection(matrix);
           geometry.vertices.add( vector );
           
           vertex = polygon.vertices[j].pos;
-          vector = new THREE.Vector3( vertex.x, vertex.y, vertex.z );
-          matrix.multiplyVector3( vector );
+          vector = new Vector3( vertex.x, vertex.y, vertex.z );
+          vector.applyProjection(matrix);
           geometry.vertices.add( vector );
           
           face = new THREE.Face3(
               geometry.vertices.length - 3,
               geometry.vertices.length - 2,
               geometry.vertices.length - 1,
-              new THREE.Vector3( polygon.normal.x, polygon.normal.y, polygon.normal.z )
+              new Vector3( polygon.normal.x, polygon.normal.y, polygon.normal.z )
           ); 
           
           geometry.faces.add( face );
@@ -196,9 +197,8 @@ class BSP {
   THREE.Mesh toMesh( THREE.Material material ) {
     var geometry = this.toGeometry(),
         mesh = new THREE.Mesh( geometry, material );
-
-    mesh.position.getPositionFromMatrix( this.matrix );
-    mesh.rotation.setEulerFromRotationMatrix( this.matrix );
+    
+    mesh.applyMatrix( this.matrix );
 
     return mesh;
   }

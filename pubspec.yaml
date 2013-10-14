@@ -7,8 +7,12 @@ authors:
 - Tiago Cardoso <tiago.cardoso@inevo.pt>
 homepage: https://github.com/threeDart/three.csg.dart
 dependencies:
+  browser: any
   three:
-    git: git://github.com/threeDart/three.dart.git
+    git:
+      ref: latest
+      url: git://github.com/threeDart/three.dart.git
   csg:
     git: git://github.com/threeDart/csg.dart.git
-
+  vector_math:
+    git: git://github.com/johnmccutchan/vector_math.git
