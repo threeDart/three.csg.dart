@@ -14,5 +14,3 @@ dependencies:
       url: git://github.com/threeDart/three.dart.git
   csg:
     git: git://github.com/threeDart/csg.dart.git
-  vector_math:
-    git: git://github.com/johnmccutchan/vector_math.git
